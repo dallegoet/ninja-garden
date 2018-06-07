@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Game from './Game';
-import Menu from './Menu';
+import RoomList from './RoomList';
 import createIo from 'socket.io-client';
+import backgroundMp3 from '../sound/background.mp3'
 
 class App extends Component {
   constructor(props) {
@@ -16,22 +17,32 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.io = createIo('http://localhost:3001');
+    this.socket = createIo('http://localhost:3001');
 
-    this.io.on('set_rooms', (rooms) => {
+    this.socket.on('set_rooms', (rooms) => {
       this.setState({
         rooms,
       });
-      console.log(this.state);
     });
+
+    var audio = new Audio(backgroundMp3);
+    audio.play();
+  }
+
+  getSelectedRoom() {
+    return this.state.rooms.find(room => room.players.find(player => player.id === this.getPlayerId()))
+  }
+
+  getPlayerId() {
+    return this.socket.io.engine.id;
   }
 
   handleAddRoom(room) {
-    this.io.emit('create_room', room);
+    this.socket.emit('create_room', room);
   }
 
   handleJoinRoom(room) {
-    this.io.emit('join_room', room.id);
+    this.socket.emit('join_room', room.id);
   }
 
   render() {
@@ -39,10 +50,25 @@ class App extends Component {
       rooms,
     } = this.state;
 
+    if (!this.socket) {
+      return null;
+    }
+
+    const selectedRoom = this.getSelectedRoom();
+
     return (
-      <div className="App">
-        <Menu onAddRoom={this.handleAddRoom} onJoinRoom={this.handleJoinRoom} rooms={rooms} />
-        <Game />
+      <div>
+        {!selectedRoom && (
+          <Fragment>
+            <header className="header">
+              Ninja Garden
+            </header>
+            
+            <RoomList onAddRoom={this.handleAddRoom} onJoinRoom={this.handleJoinRoom} rooms={rooms} />
+          </Fragment>
+        )}
+
+        {selectedRoom && <Game room={selectedRoom} socket={this.socket} />}
       </div>
     );
   }

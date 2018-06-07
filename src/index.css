@@ -1,34 +1,106 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  background: #eee;
+  font-family: 'Open Sans';
+  font-size: 20px;
+  color: #444;
 }
 
-.App {
+* {
+  font-weight: 100;
+  margin: 0;
+  outline: none;
+}
+
+.container {
+  width: 1100px;
+  margin: 0px auto;
+}
+
+.room {
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.room--name {
+  font-size: 2em;
+  padding-left: 20px;
+  flex: 4;
+}
+
+.room--joinRoomButton {
+  flex: 1;
+}
+
+.room--playerNumber {
+  flex: 1;
+}
+
+.roomList--header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin: 40px 0;
+}
+
+.header {
+  height: 240px;
+  line-height: 240px;
+  color: #fff;
+  font-family: 'Amatic SC', cursive;
   text-align: center;
+  font-size: 4em;
+
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#3e3e3e+0,040404+100 */
+  background: #3e3e3e; /* Old browsers */
+  background: -moz-linear-gradient(top, #3e3e3e 0%, #040404 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #3e3e3e 0%,#040404 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #3e3e3e 0%,#040404 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3e3e3e', endColorstr='#040404',GradientType=0 ); /* IE6-9 */
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+button {
+  padding: 26px;
+  background: #5cda7e;
+  color: #fff;
+  border: none;
+  font-size: 1em;
+  text-transform: uppercase;
+  font-weight: 100;
+  letter-spacing: 2px;
+  cursor: pointer;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+input {
+  font-weight: 100;
+  border: none;
+  padding: 26px;
+  font-size: 1em;
+  color: #777;
+  font-family: 'Arial';
 }
 
-.App-title {
-  font-size: 1.5em;
+audio {
+  display: none;
 }
 
-.App-intro {
-  font-size: large;
+.game {
+  width: 400px;
+  height: 288px;
+  margin: 100px auto;
+  position: relative;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.sprite {
+  position: absolute;
+  transition-property: top, left;
+  transition-duration: 100ms;
 }
