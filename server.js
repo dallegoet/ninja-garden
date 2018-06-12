@@ -7,13 +7,23 @@ require('node-json-color-stringify');
 let rooms = [];
 const debug = false;
 
+function updatePlayerStatus(playerId, status) {
+  updatePlayer(playerId, {
+    status,
+  });
+}
+
 function updatePlayer(playerId, data) {
   rooms.forEach((room, roomIndex) => {
-    const playerIndex = rooms[roomIndex].players.findIndex(player => player.id === playerId);
-    if (playerIndex !== -1) {
-      rooms[roomIndex].players[playerIndex].status = data.status;
-    }
+    room.players.forEach((player, playerIndex) => {
+      if (player.id === playerId) {
+        rooms[roomIndex].players[playerIndex].status = data.status;
+        io.emit('update_player', rooms[roomIndex].players[playerIndex]);
+      }
+    });
   });
+
+  printInfo();
 }
 
 function removePlayerFromAllRooms(playerId) {
@@ -57,56 +67,62 @@ function addPlayerToRoom(playerId, roomId, isHuman) {
 function loop() {
   rooms.forEach((room, roomIndex) => {
     room.players.forEach((player, playerIndex) => {
+
+      // IA moves
       if (!player.isHuman) {
         const randomMove = Math.round(Math.random() * 50);
 
         switch (randomMove) {
           case 1: 
-            rooms[roomIndex].players[playerIndex].status = 'up';
+            updatePlayerStatus(player.id, 'up');
             break;
           case 2: 
-            rooms[roomIndex].players[playerIndex].status = 'down';
+            updatePlayerStatus(player.id, 'down');
             break;
           case 3: 
-            rooms[roomIndex].players[playerIndex].status = 'left';
+            updatePlayerStatus(player.id, 'left');
             break;
           case 4: 
-            rooms[roomIndex].players[playerIndex].status = 'right';
+            updatePlayerStatus(player.id, 'right');
             break;
         }
       }
 
+      // map borders
+      if (player.x < 5) {
+        updatePlayerStatus(player.id, 'right');
+      }
+
+      if (player.x > 95) {
+        updatePlayerStatus(player.id, 'left');
+      }
+
+      if (player.y < 14) {
+        updatePlayerStatus(player.id, 'down');
+      }
+
+      if (player.y > 95) {
+        updatePlayerStatus(player.id, 'up');
+      }
+
+      // server moves control
       if (player.status === 'left') {
-        rooms[roomIndex].players[playerIndex].x -= 1;
-        if (player.x < 5) {
-          rooms[roomIndex].players[playerIndex].status = 'right';
-        }
+        rooms[roomIndex].players[playerIndex].x -= 3;
       }
 
       if (player.status === 'right') {
-        rooms[roomIndex].players[playerIndex].x += 1;
-        if (player.x > 95) {
-          rooms[roomIndex].players[playerIndex].status = 'left';
-        }
+        rooms[roomIndex].players[playerIndex].x += 3;
       }
 
       if (player.status === 'up') {
-        rooms[roomIndex].players[playerIndex].y -= 1;
-        if (player.y < 14) {
-          rooms[roomIndex].players[playerIndex].status = 'down';
-        }
+        rooms[roomIndex].players[playerIndex].y -= 3;
       }
 
       if (player.status === 'down') {
-        rooms[roomIndex].players[playerIndex].y += 1;
-        if (player.y > 95) {
-          rooms[roomIndex].players[playerIndex].status = 'up';
-        }
+        rooms[roomIndex].players[playerIndex].y += 3;
       }
     });
   });
-
-  setRooms();
 }
 
 function generateId() {
@@ -120,11 +136,11 @@ function createRoom(name) {
     players: [],
   });
 
-  setRooms();
+  updateRooms();
 }
 
-function setRooms() {
-  io.emit('set_rooms', rooms);
+function updateRooms() {
+  io.emit('update_rooms', rooms);
   printInfo();
 }
 
@@ -136,11 +152,11 @@ function printInfo() {
 }
 
 io.on('connection', function(socket) {
-  setRooms();
+  updateRooms();
 
   socket.on('disconnect', function() {
     removePlayerFromAllRooms(socket.id);
-    setRooms();
+    updateRooms();
   });
 
   socket.on('create_room', (message) => {
@@ -151,10 +167,9 @@ io.on('connection', function(socket) {
   socket.on('join_room', (roomId) => {
     removePlayerFromAllRooms(socket.id);
     addPlayerToRoom(socket.id, roomId, true);
-    setRooms();
-    printInfo();
-
     addIA(roomId);
+    updateRooms();
+    printInfo();
   });
 
   socket.on('key_pressed', (key) => {
@@ -189,5 +204,5 @@ http.listen(3001, function(){
 
   setInterval(() => {
     loop();
-  }, 100);
+  }, 300);
 });

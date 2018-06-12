@@ -102,5 +102,5 @@ audio {
 .sprite {
   position: absolute;
   transition-property: top, left;
-  transition-duration: 100ms;
+  transition-duration: 500ms;
 }
